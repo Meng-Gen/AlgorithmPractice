@@ -1,3 +1,4 @@
+import itertools
 import Median
 import sys
 
@@ -28,8 +29,8 @@ class Problem():
     def get_by_sorting(self, points):
         # cannot generalize to higher dimensions
         sorted_points = sorted(points)
-        min_delta_so_far = abs(sorted_points[0] - sorted_points[1])
-        for i in range(1, len(sorted_points) - 1):
+        min_delta_so_far = self.INFINITY
+        for i in range(len(sorted_points) - 1):
             delta = abs(sorted_points[i] - sorted_points[i + 1])
             if delta < min_delta_so_far:
                 min_delta_so_far = delta
@@ -45,7 +46,7 @@ class Problem():
         pivot = Median.Median().get(points)
         halves = self.__partition(points, pivot)
         delta = min(self.get(halves[0]), self.get(halves[1]))
-        delta_between_halves = self.get(self.__get_points_near_cut(points, pivot, delta))
+        delta_between_halves = self.__get_delta_between_halves(pivot, halves, delta)
         return min(delta, delta_between_halves)
 
     def __partition(self, points, pivot):
@@ -57,8 +58,15 @@ class Problem():
                 partition[1].append(point)
         return partition
 
-    def __get_points_near_cut(self, points, cut, cut_width):
-        return [point for point in points if abs(point - cut) < cut_width]
+    def __get_delta_between_halves(self, cut, halves, cut_width):
+        left_near_cut_points = [point for point in halves[0] if abs(point - cut) < cut_width]
+        right_near_cut_points = [point for point in halves[1] if abs(point - cut) < cut_width]
+        min_delta_so_far = self.INFINITY
+        for left_point, right_point in itertools.product(left_near_cut_points, right_near_cut_points):
+            delta = abs(left_point - right_point)
+            if delta < min_delta_so_far:
+                min_delta_so_far = delta
+        return min_delta_so_far
 
 def main():
     problem = Problem()
